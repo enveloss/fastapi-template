@@ -1,6 +1,7 @@
 from typing import Optional
 
 from sqlalchemy import delete, insert, select, update
+from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 class DBRepository[_T]:
@@ -9,23 +10,31 @@ class DBRepository[_T]:
     def __init__(self, conn: AsyncSession):
         self.conn = conn
 
-    async def add_one(self, data: dict = {}) -> _T:
+    async def add_one(self, **data) -> _T:
         stmt = insert(self.model).values(**data).returning(self.model)
         res = await self.conn.execute(stmt)
         return res.scalar_one()
 
-    async def edit_one(self, id: int, **data) -> Optional[_T]:
+    async def edit_one_by_id(self, id: int, **data) -> Optional[_T]:
         stmt = update(self.model).values(**data).filter_by(id=id).returning(self.model)
         res = await self.conn.execute(stmt)
         return res.scalar_one()
     
+    async def edit_one_by_uuid(self, uuid: str, **data) -> Optional[_T]:
+        stmt = update(self.model).values(**data).filter_by(uuid=uuid).returning(self.model)
+        res = await self.conn.execute(stmt)
+        return res.scalar_one()
+    
     async def get_one(self, **filter_by) -> Optional[_T]:
-        stmt = select(self.model).filter_by(**filter_by)
+        stmt = select(self.model).filter_by(**filter_by).options(joinedload('*'))
         res = await self.conn.execute(stmt)
         return res.scalar()
-    
-    async def get_many(self, order_by: list=[], **filter_by) -> list[_T]:
-        stmt = select(self.model).filter_by(**filter_by).order_by(*order_by)
+
+    async def get_many(self, 
+        order_by: list=[], 
+        **filter_by
+    ) -> list[_T]:
+        stmt = select(self.model).filter_by(**filter_by).order_by(*order_by).options(joinedload('*'))
         res = await self.conn.execute(stmt)
         return res.scalars().all()
     

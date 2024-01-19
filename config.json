@@ -1,0 +1,3 @@
+{
+    "db_conn_string": "postgresql+asyncpg://postgres:08092017Ss@localhost:5433/bot"
+}

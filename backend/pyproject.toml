@@ -1,16 +1,26 @@
 [tool.poetry]
-name = "api"
+name = "backend"
 version = "0.1.0"
 description = ""
 authors = ["Enveloss"]
+packages = [
+    { include = "src" },
+    { include = "alembic" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.12"
 fastapi = "^0.104.1"
 pydantic = "^2.4.2"
 sqlalchemy = "^2.0.23"
-python-dotenv = "^1.0.0"
 uvicorn = "^0.24.0.post1"
+asyncpg = "^0.29.0"
+alembic = "^1.12.1"
+pyjwt = "^2.8.0"
+
+[tool.poetry.scripts]
+dev = "src.asgi:start_dev" 
+prod = "src.asgi:start_prod"
 
 
 [build-system]
